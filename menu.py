@@ -21,7 +21,11 @@ class Menu:
 
         return options
 
-    def find_drink(self, order_name: str) -> MenuItem | None:
+    def find_drink(self, order_name: str):
+        return_value = MenuItem("", 0, 0, 0, 0.0)
+
         for item in self.menu:
             if item.name == order_name:
-                return item
+                return_value = item
+
+        return return_value

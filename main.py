@@ -27,8 +27,6 @@ while True:
             print("Menu is not available on the menu")
         else:
             requested_menu = menu.find_drink(choice)
-            if not coffee_maker.is_resource_sufficient(requested_menu):
-                print("Resources is not sufficient")
-            else:
+            if coffee_maker.is_resource_sufficient(requested_menu):
                 coffee_maker.make_coffee(requested_menu)
                 money_machine.add_money(requested_menu.cost)

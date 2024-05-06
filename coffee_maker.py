@@ -1,7 +1,5 @@
 import aspectlib
 
-import aspect
-
 
 class CoffeeMaker:
     def __init__(self, **kwargs: int):
@@ -23,11 +21,11 @@ class CoffeeMaker:
         print(f"Milk: {self.resources['milk']}ml")
         print(f"Coffee: {self.resources['coffee']}g")
 
-    def is_resource_sufficient(self, drink):
+    def is_resource_sufficient(self, order):
         can_make = True
 
-        for item in drink.ingredients:
-            if drink.ingredients[item] > self.resources[item]:
+        for item in self.resources:
+            if order.ingredients[item] > self.resources[item]:
                 print(f"Sorry there is not enough {item}.")
                 can_make = False
 
@@ -35,17 +33,28 @@ class CoffeeMaker:
 
     def make_coffee(self, order):
         for item in order.ingredients:
-            if self.resources[item] < order.ingredients[item]:
-                print(f"Sorry there is not enough {item}.")
-                return
-
             self.resources[item] -= order.ingredients[item]
 
         print(f"Here is your {order.name}. Enjoy!")
+        return True
 
 
-aspectlib.weave(CoffeeMaker.add_resources, aspect.resource_logging_aspect, lazy=True)
-aspectlib.weave(CoffeeMaker.make_coffee, aspect.resource_logging_aspect, lazy=True)
-aspectlib.weave(
-    CoffeeMaker.is_resource_sufficient, aspect.resource_logging_aspect, lazy=True
-)
+@aspectlib.Aspect(bind=True)
+def resource_logging_aspect(cutpoint, *args):
+    print("--------------------")
+    print("Resource: Starting resource logging...")
+    print(f"Resource: Current resources status: {args[0].resources}")
+    print(f"Resource: Running method: {cutpoint.__name__}")
+    print("--------------------\n")
+    print("Result: ")
+
+    yield
+
+    print("\n--------------------")
+    print(f"Resource: Final resources status: {args[0].resources}")
+    print("--------------------\n")
+
+
+aspectlib.weave(CoffeeMaker.add_resources, resource_logging_aspect, lazy=True)
+aspectlib.weave(CoffeeMaker.make_coffee, resource_logging_aspect, lazy=True)
+aspectlib.weave(CoffeeMaker.is_resource_sufficient, resource_logging_aspect, lazy=True)
